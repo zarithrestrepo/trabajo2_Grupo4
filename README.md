@@ -87,8 +87,6 @@ trabajo2-pipeline-batch-streaming/
 │   ├── lambda_procesador_ventanas.py  ← consumidor 1: valida, deduplica, ventanas → DynamoDB
 │   ├── lambda_consumidor_crudo.py     ← consumidor 2: eventos tal como llegan → S3
 │   └── conteos_y_consultas.py         ← cuadre de conteos + pregunta B
-├── extras/
-│   └── validacion_local_pyspark.py    ← (opcional) repite la Parte A en un PC, sin AWS
 └── docs/img/                          ← capturas de consola usadas en el informe (InformeTrabajo2.md)
 ```
 
