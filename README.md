@@ -60,7 +60,7 @@ flowchart LR
 |---|---|---|---|
 | A1 | ¿En qué hora y día de la semana se concentra la demanda de cada bloque? | Rama 1 → `gold/perfil_horario_bloque` → Athena | Casi todos los picos caen martes o miércoles (el bloque 03, jueves) y entre las 12:00 y las 18:00. El bloque 40 (canchas norte) es la excepción: su pico es a las 7:00. |
 | A2 | ¿Cuánto consume y cuánto cuesta cada bloque por año, y cómo cambia? | Rama 2 → `gold/consumo_costo_mensual` → Athena | El bloque 40 es el mayor consumidor (≈23,1 GWh y ≈11.800 millones de COP en 2025). El bloque 18 baja ≈11 % en 2025 frente a 2024. |
-| B | ¿Qué bloque tuvo el mayor consumo promedio por evento y cuál fue su ventana pico? | DynamoDB `ventanas_resultados` → `conteos_y_consultas.py` | _completar con la salida de su ejecución_ |
+| B | ¿Qué bloque tuvo el mayor consumo promedio por evento y cuál fue su ventana pico? | DynamoDB `ventanas_resultados` → `conteos_y_consultas.py` | El bloque 40 tuvo el mayor consumo promedio de 191.97 kWh y su ventana pico fue 224 kWh en 1 evento al minuto 5.|
 
 El detalle de las cifras y cómo obtenerlas está en el [informe]
 
