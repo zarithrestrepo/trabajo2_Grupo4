@@ -118,13 +118,14 @@ Amazon Kinesis Data Streams · AWS Lambda (Python 3.12) · Amazon DynamoDB · Py
 
 De acuerdo con la condición 7.5 del enunciado, el equipo declara de forma explícita en qué partes del trabajo usó IA. Todos los integrantes revisamos, entendemos y respondemos por todo el contenido, incluido el generado con IA.
 
-Componente	¿Se usó IA?	Herramienta	Qué hizo la IA / qué hizo el equipo
-Scripts de Glue (job1, job2, job3)	Sí  Claude (Anthropic) Revisión de los scripts y corrección de datos
-Definición de la máquina de estados	NO	
-Consultas de Athena	NO
-Productor	NO
-Lambdas (procesador de ventanas y consumidor crudo)	NO
-Script de conteos y consulta	NO
-Script de validación local (extras/)	Sí	Claude (Anthropic)	Generado por la IA para verificar las cifras de la Parte A sin AWS; el equipo lo ejecutó y comparó con los resultados de Glue/Athena.
-README e informe de reproducibilidad	Sí	Claude (Anthropic)	Redactados por la IA a partir del código, los datos y el enunciado; el equipo revisó, corrigió y completó los datos propios (nombres, enlaces, resultados de la Parte B).
-Análisis e interpretación de resultados	NO
+|Componente |	¿Se usó IA?	| Herramienta |	Qué hizo la IA / qué hizo el equipo |
+|---|---|---|---|
+| Scripts de Glue (job1, job2, job3)	| Sí | Claude (Anthropic) Revisión de los scripts y corrección de datos |
+| Definición de la máquina de estados |	NO	|---|---|
+| Consultas de Athena|	NO |---|---|
+| Productor|	NO |---|---|
+| Lambdas (procesador de ventanas y consumidor crudo)|	NO|---|---|
+| Script de conteos y consulta|	NO|---|---|
+| Script de validación local (extras/)	| Sí |	Claude (Anthropic) |	Generado por la IA para verificar las cifras de la Parte A sin AWS; el equipo lo ejecutó y comparó con los resultados de Glue/Athena.
+| README e informe de reproducibilidad |	Sí	| Claude (Anthropic) |	Redactados por la IA a partir del código, los datos y el enunciado; el equipo revisó, corrigió y completó los datos propios (nombres, enlaces, resultados de la Parte B).
+| Análisis e interpretación de resultados |	NO |---|---|
