@@ -352,6 +352,11 @@ este volumen) u **On-demand**.
 5. (Opcional) **Environment variables:** `KWH_MIN=0`, `KWH_MAX=1500`. Los nombres de tabla tienen valores por defecto.
 6. **Add trigger → Kinesis** → `<STREAM>` → **Batch size:** 100 → **Starting position:** **Trim horizon** → **Add**.
 
+
+¿Por qué AWS Lambda y no Apache Flink?
+
+Para calcular las ventanas usamos AWS Lambda en lugar de Amazon Managed Service for Apache Flink, que el enunciado sugiere pero no exige. El cálculo pedido (conteo y promedio de kWh por bloque en ventanas de un minuto) es una agregación sumable: basta con acumular conteo y suma por ventana con escrituras atómicas (ADD) en DynamoDB, sin guardar estado en la memoria de la función. El volumen de la prueba, un productor de pocos minutos, está muy por debajo de la capacidad de un solo shard de Kinesis (1.000 registros/s de escritura). Además, Lambda se crea completa desde la consola, como exige el curso, y solo cobra cuando procesa, mientras que una aplicación Flink cobra como mínimo 2 KPU (≈0,22 USD/h en us-east-1) desde que se enciende. Conocemos sus límites: Lambda entrega cada evento al menos una vez (at least once), por lo que la deduplicación por event_id y la idempotencia por seq se construyeron a mano; procesa por defecto un lote a la vez por shard (máximo 10 con ParallelizationFactor); sus ventanas nativas son solo fijas, de hasta 15 minutos y con un estado máximo de 1 MB por shard; y no tiene watermarks, así que nuestras ventanas nunca se cierran. Migraríamos a Flink si la métrica IteratorAge de Kinesis creciera de forma sostenida, señal de que la Lambda no alcanza a procesar lo que llega, o si el proyecto necesitara ventanas deslizantes o de sesión, manejo de eventos tardíos, unión de varios streams o garantía exactly once de punta a punta.
+
 ### 6.4 Crear la Lambda `consumidor-crudo` (consumidor 2)
 
 Igual que la anterior, con el código de `parte_b_streaming/lambda_consumidor_crudo.py`, handler
