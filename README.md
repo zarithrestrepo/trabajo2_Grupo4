@@ -9,8 +9,8 @@
 | **Curso** | SI7006 — Almacenamiento y Procesamiento de Grandes Datos, 2026-2 |
 | **Profesor** | Edwin Montoya (emontoya@eafit.edu.co) |
 | **Equipo** | Marcela Londoño Leon, Isabela Osorio Botero, Zarith Isabella Restrepo Giraldo |
-| **Video (YouTube)** | xxx |
-| **Informe de reproducibilidad** | (INFORMETRABAJO2.md) |
+| **Video (YouTube)** | [xxx](https://www.youtube.com/watch?v=lW53D0dddhY) |
+| **Informe de reproducibilidad** | (InformeTrabajo2.md) |
 
 ---
 
@@ -62,14 +62,14 @@ flowchart LR
 | A2 | ¿Cuánto consume y cuánto cuesta cada bloque por año, y cómo cambia? | Rama 2 → `gold/consumo_costo_mensual` → Athena | El bloque 40 es el mayor consumidor (≈23,1 GWh y ≈11.800 millones de COP en 2025). El bloque 18 baja ≈11 % en 2025 frente a 2024. |
 | B | ¿Qué bloque tuvo el mayor consumo promedio por evento y cuál fue su ventana pico? | DynamoDB `ventanas_resultados` → `conteos_y_consultas.py` | El bloque 40 tuvo el mayor consumo promedio de 191.97 kWh y su ventana pico fue 224 kWh en 1 evento al minuto 5.|
 
-El detalle de las cifras y cómo obtenerlas está en el [informe]
+El detalle de las cifras y cómo obtenerlas está en el (InformeTrabajo2.md)
 
 ## Estructura del repositorio
 
 ```
 trabajo2-pipeline-batch-streaming/
 ├── README.md                          ← este archivo
-├── INFORME_TRABAJO2.md                ← guía paso a paso para reproducir el proyecto
+├── (InformeTrabajo2.md)                ← guía paso a paso para reproducir el proyecto
 ├── datos/
 │   ├── consumo_sintetico_subestaciones.csv.gz   ← 5.274.657 lecturas (comprimido, ~44 MB)
 │   └── medidores.csv                            ← 120 medidores (segundo conjunto, para el join)
@@ -89,18 +89,18 @@ trabajo2-pipeline-batch-streaming/
 │   └── conteos_y_consultas.py         ← cuadre de conteos + pregunta B
 ├── extras/
 │   └── validacion_local_pyspark.py    ← (opcional) repite la Parte A en un PC, sin AWS
-└── docs/img/                          ← capturas de consola usadas en el informe
+└── docs/img/                          ← capturas de consola usadas en el informe (InformeTrabajo2.md)
 ```
 
 ## Inicio rápido
 
 1. Clonar el repositorio y descomprimir los datos:
    ```bash
-   git clone https://github.com/<usuario>/trabajo2-pipeline-batch-streaming.git
+   git clone https://github.com/zarithrestrepo/trabajo2_Grupo4
    cd trabajo2-pipeline-batch-streaming
    gunzip -k datos/consumo_sintetico_subestaciones.csv.gz
    ```
-2. Seguir el [informe de reproducibilidad]: sección 5 para la Parte A y sección 6 para la Parte B.
+2. Seguir el (InformeTrabajo2.md): sección 5 para la Parte A y sección 6 para la Parte B.
    Todos los recursos se crean a mano en la consola de AWS (requisito del curso: sin CloudFormation, Terraform ni
    Serverless Framework).
 3. (Opcional) Verificar las cifras de la Parte A sin AWS:
@@ -127,5 +127,5 @@ De acuerdo con la condición 7.5 del enunciado, el equipo declara de forma expl�
 | Lambdas (procesador de ventanas y consumidor crudo)|	NO|---|---|
 | Script de conteos y consulta|	NO|---|---|
 | Script de validación local (extras/)	| Sí |	Claude (Anthropic) |	Generado por la IA para verificar las cifras de la Parte A sin AWS; el equipo lo ejecutó y comparó con los resultados de Glue/Athena.
-| README e informe de reproducibilidad |	Sí	| Claude (Anthropic) |	Redactados por la IA a partir del código, los datos y el enunciado; el equipo revisó, corrigió y completó los datos propios (nombres, enlaces, resultados de la Parte B).
+| README e informe de reproducibilidad (InformeTrabajo2.md) |	Sí	| Claude (Anthropic) |	Redactados por la IA a partir del código, los datos y el enunciado; el equipo revisó, corrigió y completó los datos propios (nombres, enlaces, resultados de la Parte B).
 | Análisis e interpretación de resultados |	NO |---|---|
