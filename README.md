@@ -120,7 +120,7 @@ De acuerdo con la condición 7.5 del enunciado, el equipo declara de forma expl�
 
 |Componente |	¿Se usó IA?	| Herramienta |	Qué hizo la IA / qué hizo el equipo |
 |---|---|---|---|
-| Scripts de Glue (job1, job2, job3)	| Sí | Claude (Anthropic) Revisión de los scripts y corrección de datos |
+| Scripts de Glue (job1, job2, job3)	| Sí | Claude (Anthropic) | Revisión de los scripts y corrección de datos |
 | Definición de la máquina de estados |	NO	|---|---|
 | Consultas de Athena|	NO |---|---|
 | Productor|	NO |---|---|
