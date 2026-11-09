@@ -16,16 +16,16 @@
 
 ## ¿De qué trata?
 
-El proyecto integrador analiza el consumo horario de energía activa (kWh) de **120 medidores** conectados a
+El proyecto integrador analiza el consumo horario de energía activa (kWh) de 120 medidores conectados a
 **9 bloques/subestaciones** de un campus, entre el 23-oct-2021 y el 22-oct-2026. El trabajo tiene dos partes:
 
-- **Parte A (batch).** Un horario de **EventBridge Scheduler** inicia una máquina de estados de **Step Functions**.
-  Un trabajo de **Glue (PySpark)** limpia 5,27 millones de lecturas, las une con el catálogo de medidores y escribe
-  Parquet particionado por año. Después, dos trabajos de Glue corren **en paralelo** y responden dos preguntas de
-  analítica, que se consultan con **Athena**.
-- **Parte B (streaming).** Un productor publica eventos en **Kinesis Data Streams** durante más de 5 minutos, con
-  repetidos e inválidos a propósito. Una **Lambda** calcula ventanas de 1 minuto (conteo y promedio de kWh por bloque)
-  y las guarda en **DynamoDB**; otra Lambda guarda los eventos crudos en **S3**. Un script comprueba que los conteos cuadran.
+- **Parte A (batch).** Un horario de EventBridge Scheduler inicia una máquina de estados de Step Functions.
+  Un trabajo de Glue (PySpark) limpia 5,27 millones de lecturas, las une con el catálogo de medidores y escribe
+  Parquet particionado por año. Después, dos trabajos de Glue corren en paralelo y responden dos preguntas de
+  analítica, que se consultan con Athena.
+- **Parte B (streaming).** Un productor publica eventos en Kinesis Data Streams durante más de 5 minutos, con
+  repetidos e inválidos a propósito. Una Lambda calcula ventanas de 1 minuto (conteo y promedio de kWh por bloque)
+  y las guarda en DynamoDB; otra Lambda guarda los eventos crudos en S3. Un script comprueba que los conteos cuadran.
 
 ## Arquitectura
 
@@ -101,7 +101,7 @@ trabajo2-pipeline-batch-streaming/
    gunzip -k datos/consumo_sintetico_subestaciones.csv.gz
    ```
 2. Seguir el [informe de reproducibilidad]: sección 5 para la Parte A y sección 6 para la Parte B.
-   **Todos los recursos se crean a mano en la consola de AWS** (requisito del curso: sin CloudFormation, Terraform ni
+   Todos los recursos se crean a mano en la consola de AWS (requisito del curso: sin CloudFormation, Terraform ni
    Serverless Framework).
 3. (Opcional) Verificar las cifras de la Parte A sin AWS:
    ```bash
