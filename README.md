@@ -9,7 +9,7 @@
 | **Curso** | SI7006 — Almacenamiento y Procesamiento de Grandes Datos, 2026-2 |
 | **Profesor** | Edwin Montoya (emontoya@eafit.edu.co) |
 | **Equipo** | Marcela Londoño Leon, Isabela Osorio Botero, Zarith Isabella Restrepo Giraldo |
-| **Video (YouTube)** | [xxx](https://www.youtube.com/watch?v=lW53D0dddhY) |
+| **Video (YouTube)** |(https://www.youtube.com/watch?v=lW53D0dddhY) |
 | **Informe de reproducibilidad** | (InformeTrabajo2.md) |
 
 ---
