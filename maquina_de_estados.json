@@ -1,0 +1,115 @@
+{
+  "Comment": "Trabajo 2 - Parte A: Glue inicial y luego dos ramas en paralelo (con un reintento)",
+  "StartAt": "GlueInicial_LimpiezaJoin",
+  "States": {
+    "GlueInicial_LimpiezaJoin": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "job1-limpieza-join"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 10,
+          "MaxAttempts": 1,
+          "BackoffRate": 1
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "JobFailed"
+        }
+      ],
+      "Next": "RamasEnParalelo"
+    },
+    "RamasEnParalelo": {
+      "Type": "Parallel",
+      "End": true,
+      "Branches": [
+        {
+          "StartAt": "Rama1_PerfilHorario",
+          "States": {
+            "Rama1_PerfilHorario": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "job2-rama1-perfil-horario"
+              },
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "IntervalSeconds": 10,
+                  "MaxAttempts": 1,
+                  "BackoffRate": 1
+                }
+              ],
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "Rama1_Fallo"
+                }
+              ],
+              "End": true
+            },
+            "Rama1_Fallo": {
+              "Type": "Fail",
+              "Error": "GlueJobFailed",
+              "Cause": "Fallo la rama 1 (perfil horario)"
+            }
+          }
+        },
+        {
+          "StartAt": "Rama2_CostoMensual",
+          "States": {
+            "Rama2_CostoMensual": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "job3-rama2-costo-mensual"
+              },
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "IntervalSeconds": 10,
+                  "MaxAttempts": 1,
+                  "BackoffRate": 1
+                }
+              ],
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "Rama2_Fallo"
+                }
+              ],
+              "End": true
+            },
+            "Rama2_Fallo": {
+              "Type": "Fail",
+              "Error": "GlueJobFailed",
+              "Cause": "Fallo la rama 2 (costo mensual)"
+            }
+          }
+        }
+      ]
+    },
+    "JobFailed": {
+      "Type": "Fail",
+      "Error": "GlueJobFailed",
+      "Cause": "Fallo el trabajo de Glue inicial"
+    }
+  }
+}
