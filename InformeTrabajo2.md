@@ -5,13 +5,13 @@
 
 | | |
 |---|---|
-| **Integrantes** | _Nombre 1 (correo)_ · _Nombre 2 (correo)_ · _Nombre 3 (correo)_ |
-| **Repositorio** | _https://github.com/<usuario>/trabajo2-pipeline-batch-streaming_ |
-| **Video** | _https://youtu.be/..._ |
+| **Integrantes** |Marcela Londoño, Isabela Osorio Boterio, Zarith Isabella Restrepo Giraldo |
+| **Repositorio** | https://github.com/zarithrestrepo/trabajo2_Grupo4  |
+| **Video** |https://www.youtube.com/watch?v=lW53D0dddhY |
 | **Región de AWS usada** | _`us-east-1` (ajustar)_ |
 
-Este informe explica qué se construyó, por qué se diseñó así y, sobre todo, **cómo un tercero puede reproducirlo
-paso a paso** en su propia cuenta de AWS. Las cifras de la Parte A se verificaron dos veces: en Glue/Athena y con el
+Este informe explica qué se construyó, por qué se diseñó así y, sobre todo, cómo un tercero puede reproducirlo
+paso a paso en su propia cuenta de AWS. Las cifras de la Parte A se verificaron dos veces: en Glue/Athena y con el
 script local [`extras/validacion_local_pyspark.py`](extras/validacion_local_pyspark.py).
 
 ---
@@ -109,11 +109,11 @@ Parquet) → **gold** (agregaciones listas para responder preguntas).
 | Esquemas explícitos al leer el CSV | El encabezado trae BOM y tildes (`Hora del día`, `Energía activa (kWh)`). Con un esquema fijo las columnas se asignan por posición y quedan con nombres limpios. Además, un valor que no se puede convertir (por ejemplo texto en `kwh`) queda como nulo y lo elimina la regla de vacíos. |
 | Cuatro reglas de limpieza en orden: vacíos → negativos → duplicados → atípicos | Cada regla se cuenta por separado y queda en el log de Glue (`[LIMPIEZA] ...`), lo que permite explicar en el video cuántos registros quitó cada una. |
 | Duplicado = misma terna `(medidor, fecha, hora)` | Un medidor solo puede tener una lectura por hora. |
-| Atípico = kWh > 3 × percentil 99 **del propio medidor** | Los medidores tienen escalas muy distintas (el bloque 40 consume ~6 veces más que el 1G); un umbral global borraría lecturas normales de los medidores grandes. |
+| Atípico = kWh > 3 × percentil 99 del propio medidor | Los medidores tienen escalas muy distintas (el bloque 40 consume ~6 veces más que el 1G); un umbral global borraría lecturas normales de los medidores grandes. |
 | `broadcast` en el join con `medidores` | La tabla de medidores tiene 120 filas: se copia a cada ejecutor y se evita mover millones de filas por la red (shuffle). |
-| **Partición por `anio`** | Las consultas de la rama 2 filtran por año (2022–2025 son los años completos), así que Athena solo lee las particiones necesarias. Son 6 particiones de ~1 millón de filas, un tamaño sano. Particionar por `medidor` (120) o por `fecha` (1.826 días) crearía miles de archivos pequeños, que hacen más lentas las consultas. |
+| **Partición por `año`** | Las consultas de la rama 2 filtran por año (2022–2025 son los años completos), así que Athena solo lee las particiones necesarias. Son 6 particiones de ~1 millón de filas, un tamaño sano. Particionar por `medidor` (120) o por `fecha` (1.826 días) crearía miles de archivos pequeños, que hacen más lentas las consultas. |
 | `dia_semana` con 1 = lunes … 7 = domingo | Spark numera 1 = domingo; se ajusta con `(dayofweek + 5) % 7 + 1` para que la lectura sea natural. |
-| Variación interanual sobre **kWh promedio por día** | Octubre de 2021 y octubre de 2026 están incompletos. Comparar totales mensuales daría variaciones falsas; el promedio diario sí es comparable. |
+| Variación interanual sobre kWh promedio por día | Octubre de 2021 y octubre de 2026 están incompletos. Comparar totales mensuales daría variaciones falsas; el promedio diario sí es comparable. |
 | Costo = kWh × 512 COP/kWh | Supuesto de tarifa de energía comprada a la red tomado de la propuesta del proyecto. |
 | `Retry` (1 reintento) y `Catch` → `Fail` en cada tarea | Un fallo transitorio de Glue se reintenta una vez; si vuelve a fallar, la ejecución termina en un estado de error con causa legible. |
 
@@ -125,7 +125,7 @@ Parquet) → **gold** (agregaciones listas para responder preguntas).
 | Ventana = minuto del campo `ts` del evento (UTC) | Se agrupa por la hora en que ocurrió el evento, no por la hora en que llegó. |
 | Repetido = mismo `event_id` | `put_item` con `ConditionExpression="attribute_not_exists(event_id)"` sobre `eventos_vistos`: solo la primera escritura gana; las siguientes fallan y se registran como repetidas. |
 | Reintentos de Lambda sin doble conteo | Si Lambda reprocesa un lote, el mismo registro de Kinesis trae el mismo `sequenceNumber`. El código compara ese número con el guardado: si coincide, es un reintento y no se cuenta. Las tablas de repetidos e inválidos usan `seq` como llave, así que reescribirlas no crea filas nuevas. |
-| Conteos a partir de **tablas**, no de contadores | Contar ítems de tablas con llave única es idempotente y verificable desde afuera; un contador en memoria se pierde o se duplica con reintentos. |
+| Conteos a partir de tablas, no de contadores | Contar ítems de tablas con llave única es idempotente y verificable desde afuera; un contador en memoria se pierde o se duplica con reintentos. |
 | Rango válido de kWh = [0, 1500] | Configurable con las variables `KWH_MIN` y `KWH_MAX`. |
 | Segundo consumidor independiente | Lee el mismo stream con su propio disparador y guarda todo tal como llega, incluso repetidos e inválidos. Sirve de segunda comprobación del cuadre. |
 
@@ -138,7 +138,7 @@ Parquet) → **gold** (agregaciones listas para responder preguntas).
 | Componente | Versión / configuración |
 |---|---|
 | AWS Glue | _Glue 4.0 (Spark 3.3, Python 3.10), tipo Spark, workers G.1X — ajustar a lo usado_ |
-| AWS Step Functions | Tipo **Standard** (el patrón `.sync` no funciona en Express) |
+| AWS Step Functions | Tipo Standard (el patrón `.sync` no funciona en Express) |
 | AWS Lambda | _Python 3.12 — ajustar_ |
 | Python local / CloudShell | Python 3.10+ con `boto3` |
 | Validación local (opcional) | Java 11+ y `pyspark==3.5.3` |
@@ -185,8 +185,8 @@ Nivel_tension_kV, Bloques_atendidos, Escala, Intensidad_pico, Tendencia_anual`. 
 
 ### 4.2 Nombres usados en esta guía
 
-Reemplace los valores entre `< >` por los suyos. Los nombres de los **trabajos de Glue** y de las **tablas de
-DynamoDB** deben ser exactamente estos, porque están escritos en el código y en la máquina de estados.
+Reemplace los valores entre `< >` por los suyos. Los nombres de los trabajos de Glue y de las tablas de
+DynamoDB deben ser exactamente estos, porque están escritos en el código y en la máquina de estados.
 
 | Recurso | Nombre |
 |---|---|
