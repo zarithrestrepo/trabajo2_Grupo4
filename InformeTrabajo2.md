@@ -5,7 +5,7 @@
 
 | | |
 |---|---|
-| **Integrantes** |Marcela Londoño, Isabela Osorio Boterio, Zarith Isabella Restrepo Giraldo |
+| **Integrantes** |Marcela Londoño Leon, Isabela Osorio Botero, Zarith Isabella Restrepo Giraldo |
 | **Repositorio** | https://github.com/zarithrestrepo/trabajo2_Grupo4  |
 | **Video** |https://www.youtube.com/watch?v=lW53D0dddhY |
 | **Región de AWS usada** | `us-east-1`|
