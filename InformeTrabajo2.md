@@ -11,8 +11,7 @@
 | **Región de AWS usada** | `us-east-1`|
 
 Este informe explica qué se construyó, por qué se diseñó así y, sobre todo, cómo un tercero puede reproducirlo
-paso a paso en su propia cuenta de AWS. Las cifras de la Parte A se verificaron dos veces: en Glue/Athena y con el
-script local [`extras/validacion_local_pyspark.py`](extras/validacion_local_pyspark.py).
+paso a paso en su propia cuenta de AWS.
 
 ---
 
