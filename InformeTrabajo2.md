@@ -8,7 +8,7 @@
 | **Integrantes** |Marcela Londoño, Isabela Osorio Boterio, Zarith Isabella Restrepo Giraldo |
 | **Repositorio** | https://github.com/zarithrestrepo/trabajo2_Grupo4  |
 | **Video** |https://www.youtube.com/watch?v=lW53D0dddhY |
-| **Región de AWS usada** | _`us-east-1` (ajustar)_ |
+| **Región de AWS usada** | _`us-east-1`|
 
 Este informe explica qué se construyó, por qué se diseñó así y, sobre todo, cómo un tercero puede reproducirlo
 paso a paso en su propia cuenta de AWS. Las cifras de la Parte A se verificaron dos veces: en Glue/Athena y con el
@@ -49,7 +49,7 @@ bloques/subestaciones de un campus. Con esos datos se construyeron:
 | Horario de EventBridge Scheduler que inicia la máquina | Horario con destino `StartExecution` de Step Functions | Paso 5.6 |
 | Glue inicial que lee CSV de S3, limpia, une y escribe Parquet particionado | Descarta vacíos, negativos, duplicados y atípicos; join por `medidor`; partición por `anio` | `parte_a_batch/glue/job1_limpieza_join.py` |
 | Dos ramas en paralelo, automáticas, tras el éxito del Glue inicial | Estado `Parallel` con dos tareas `glue:startJobRun.sync` | `parte_a_batch/step_functions/maquina_de_estados.json` |
-| Cada rama responde una pregunta distinta y escribe Parquet | Rama 1: perfil horario. Rama 2: consumo y costo mensual | `job2_...py`, `job3_...py` |
+| Cada rama responde una pregunta distinta y escribe Parquet | Rama 1: perfil horario. Rama 2: consumo y costo mensual | `job2_rama1_perfil_horario.py`, `job3_rama2_costo_mensual.py` |
 | Consulta de las dos agrupaciones | Athena | `parte_a_batch/athena/athena_consultas.sql` |
 | Productor continuo ≥ 5 min, con repetidos e inválidos | _ver nota en 1.2_ | `parte_b_streaming/productor.py` |
 | Ventanas de 1 minuto: conteo y promedio por categoría | Lambda; categoría = bloque; ventana = minuto del campo `ts` | `lambda_procesador_ventanas.py` |
@@ -107,7 +107,7 @@ Parquet) → **gold** (agregaciones listas para responder preguntas).
 | Decisión | Por qué |
 |---|---|
 | Esquemas explícitos al leer el CSV | El encabezado trae BOM y tildes (`Hora del día`, `Energía activa (kWh)`). Con un esquema fijo las columnas se asignan por posición y quedan con nombres limpios. Además, un valor que no se puede convertir (por ejemplo texto en `kwh`) queda como nulo y lo elimina la regla de vacíos. |
-| Cuatro reglas de limpieza en orden: vacíos → negativos → duplicados → atípicos | Cada regla se cuenta por separado y queda en el log de Glue (`[LIMPIEZA] ...`), lo que permite explicar en el video cuántos registros quitó cada una. |
+| Cuatro reglas de limpieza en orden: vacíos → negativos → duplicados → atípicos | Cada regla se cuenta por separado y queda en el log de Glue (`[LIMPIEZA] `), lo que permite explicar en el video cuántos registros quitó cada una. |
 | Duplicado = misma terna `(medidor, fecha, hora)` | Un medidor solo puede tener una lectura por hora. |
 | Atípico = kWh > 3 × percentil 99 del propio medidor | Los medidores tienen escalas muy distintas (el bloque 40 consume ~6 veces más que el 1G); un umbral global borraría lecturas normales de los medidores grandes. |
 | `broadcast` en el join con `medidores` | La tabla de medidores tiene 120 filas: se copia a cada ejecutor y se evita mover millones de filas por la red (shuffle). |
