@@ -8,7 +8,7 @@
 | **Integrantes** |Marcela Londoño, Isabela Osorio Boterio, Zarith Isabella Restrepo Giraldo |
 | **Repositorio** | https://github.com/zarithrestrepo/trabajo2_Grupo4  |
 | **Video** |https://www.youtube.com/watch?v=lW53D0dddhY |
-| **Región de AWS usada** | _`us-east-1`|
+| **Región de AWS usada** | `us-east-1`|
 
 Este informe explica qué se construyó, por qué se diseñó así y, sobre todo, cómo un tercero puede reproducirlo
 paso a paso en su propia cuenta de AWS. Las cifras de la Parte A se verificaron dos veces: en Glue/Athena y con el
