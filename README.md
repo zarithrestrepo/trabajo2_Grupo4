@@ -9,8 +9,8 @@
 | **Curso** | SI7006 — Almacenamiento y Procesamiento de Grandes Datos, 2026-2 |
 | **Profesor** | Edwin Montoya (emontoya@eafit.edu.co) |
 | **Equipo** | Marcela Londoño Leon, Isabela Osorio Botero, Zarith Isabella Restrepo Giraldo |
-| **Video (YouTube)** |(https://www.youtube.com/watch?v=lW53D0dddhY) |
-| **Informe de reproducibilidad** | (InformeTrabajo2.md) |
+| **Video (YouTube)** | [Ver video en YouTube](https://www.youtube.com/watch?v=lW53D0dddhY) |
+| **Informe de reproducibilidad** | [InformeTrabajo2.md](InformeTrabajo2.md) |
 
 ---
 
@@ -31,27 +31,27 @@ El proyecto integrador analiza el consumo horario de energía activa (kWh) de 12
 
 ```mermaid
 flowchart LR
-  subgraph A["Parte A · batch"]
-    SCH["EventBridge<br/>Scheduler"] --> SF["Step Functions"]
-    RAW[("S3 raw/<br/>CSV")] --> J1
-    SF --> J1["Glue job1<br/>limpieza + join"]
-    J1 --> SIL[("S3 silver/<br/>Parquet por anio")]
-    J1 --> PAR{{"Parallel"}}
-    PAR --> J2["Glue job2<br/>perfil horario"]
-    PAR --> J3["Glue job3<br/>costo mensual"]
-    SIL --> J2 & J3
-    J2 --> G1[("S3 gold/<br/>perfil_horario_bloque")]
-    J3 --> G2[("S3 gold/<br/>consumo_costo_mensual")]
-    G1 & G2 --> ATH["Athena"]
-  end
-  subgraph B["Parte B · streaming"]
-    PROD["Productor<br/>Python"] --> KDS["Kinesis<br/>Data Streams"]
-    KDS --> L1["Lambda<br/>procesador_ventanas"]
-    KDS --> L2["Lambda<br/>consumidor_crudo"]
-    L1 --> DDB[("DynamoDB<br/>ventanas · vistos ·<br/>repetidos · inválidos")]
-    L2 --> S3C[("S3 crudos/<br/>JSON lines")]
-    DDB & S3C --> CNT["conteos_y_consultas.py"]
-  end
+    subgraph A["Parte A · batch"]
+        SCH["EventBridge<br/>Scheduler"] --> SF["Step Functions"]
+        RAW[("S3 raw/<br/>CSV")] --> J1
+        SF --> J1["Glue job1<br/>limpieza + join"]
+        J1 --> SIL[("S3 silver/<br/>Parquet por anio")]
+        J1 --> PAR{{"Parallel"}}
+        PAR --> J2["Glue job2<br/>perfil horario"]
+        PAR --> J3["Glue job3<br/>costo mensual"]
+        SIL --> J2 & J3
+        J2 --> G1[("S3 gold/<br/>perfil_horario_bloque")]
+        J3 --> G2[("S3 gold/<br/>consumo_costo_mensual")]
+        G1 & G2 --> ATH["Athena"]
+    end
+    subgraph B["Parte B · streaming"]
+        PROD["Productor<br/>Python"] --> KDS["Kinesis<br/>Data Streams"]
+        KDS --> L1["Lambda<br/>procesador_ventanas"]
+        KDS --> L2["Lambda<br/>consumidor_crudo"]
+        L1 --> DDB[("DynamoDB<br/>ventanas · vistos ·<br/>repetidos · inválidos")]
+        L2 --> S3C[("S3 crudos/<br/>JSON lines")]
+        DDB & S3C --> CNT["conteos_y_consultas.py"]
+    end
 ```
 
 ## Preguntas de analítica y resultados
@@ -62,14 +62,14 @@ flowchart LR
 | A2 | ¿Cuánto consume y cuánto cuesta cada bloque por año, y cómo cambia? | Rama 2 → `gold/consumo_costo_mensual` → Athena | El bloque 40 es el mayor consumidor (≈23,1 GWh y ≈11.800 millones de COP en 2025). El bloque 18 baja ≈11 % en 2025 frente a 2024. |
 | B | ¿Qué bloque tuvo el mayor consumo promedio por evento y cuál fue su ventana pico? | DynamoDB `ventanas_resultados` → `conteos_y_consultas.py` | El bloque 40 tuvo el mayor consumo promedio de 191.97 kWh y su ventana pico fue 224 kWh en 1 evento al minuto 5.|
 
-El detalle de las cifras y cómo obtenerlas está en el (InformeTrabajo2.md)
+El detalle de las cifras y cómo obtenerlas está en el [InformeTrabajo2.md](InformeTrabajo2.md)
 
 ## Estructura del repositorio
 
 ```
 trabajo2-pipeline-batch-streaming/
 ├── README.md                          ← este archivo
-├── (InformeTrabajo2.md)                ← guía paso a paso para reproducir el proyecto
+├── InformeTrabajo2.md                 ← guía paso a paso para reproducir el proyecto
 ├── datos/
 │   ├── consumo_sintetico_subestaciones.csv.gz   ← 5.274.657 lecturas (comprimido, ~44 MB)
 │   └── medidores.csv                            ← 120 medidores (segundo conjunto, para el join)
@@ -83,11 +83,13 @@ trabajo2-pipeline-batch-streaming/
 │   └── athena/
 │       └── athena_consultas.sql       ← tablas externas y consultas que responden A1 y A2
 ├── parte_b_streaming/
-│   ├── productor.py                   ← PENDIENTE: agregar el productor del equipo
+│   ├── productor.py                   ← script generador y publicador de eventos a Kinesis
 │   ├── lambda_procesador_ventanas.py  ← consumidor 1: valida, deduplica, ventanas → DynamoDB
 │   ├── lambda_consumidor_crudo.py     ← consumidor 2: eventos tal como llegan → S3
 │   └── conteos_y_consultas.py         ← cuadre de conteos + pregunta B
-└── docs/img/                          ← capturas de consola usadas en el informe (InformeTrabajo2.md)
+├── extras/
+│   └── validacion_local_pyspark.py    ← script opcional para validación local con PySpark
+└── docs/img/                          ← capturas de consola usadas en el informe.
 ```
 
 ## Inicio rápido

@@ -317,34 +317,10 @@ la vez, en orden**:
 
 ---
 
-## 6. Reproducción de la Parte B (streaming)
-
-> **Orden importante:** crear las tablas, las Lambdas y sus disparadores **antes** de lanzar el productor. Así los
-> dos consumidores leen todos los eventos desde el principio y los conteos cuadran.
-
-### 6.1 Crear el stream de Kinesis
-
-**Kinesis → Data streams → Create data stream** → nombre `<STREAM>` → modo **Provisioned, 1 shard** (alcanza para
-este volumen) u **On-demand**.
-
-### 6.2 Crear las cuatro tablas de DynamoDB
-
-**DynamoDB → Tables → Create table**, con capacidad **On-demand**:
-
-| Tabla | Partition key | Sort key | Para qué sirve |
-|---|---|---|---|
-| `eventos_vistos` | `event_id` (String) | — | Un ítem por evento único; base de la deduplicación |
-| `eventos_repetidos` | `seq` (String) | — | Repetidos descartados, con el `seq` del original |
-| `eventos_invalidos` | `seq` (String) | — | Inválidos descartados, con su `motivo` y el texto recibido |
-| `ventanas_resultados` | `categoria` (String) | `ventana_inicio` (String) | Una fila por bloque y minuto: `conteo`, `suma`, `promedio` |
-
-> El código escribe un atributo `ttl` (24 horas) en `eventos_vistos`. **No active TTL en esa tabla** hasta haber
-> corrido el cuadre: si DynamoDB borra ítems vencidos, el conteo de únicos baja y el cuadre falla.
 
 ### 6.3 Crear la Lambda `procesador-ventanas` (consumidor 1)
 
-1. **Lambda → Create function** → **Author from scratch** → nombre `procesador-ventanas` → runtime **Python 3.12** →
-   rol existente `LabRole` (o un rol con `AWSLambdaKinesisExecutionRole` y escritura en las 4 tablas).
+1. **Lambda → Create function** → **Author from scratch** → nombre `procesador-ventanas` → runtime **Python 3.12** → rol existente `LabRole` (o un rol con `AWSLambdaKinesisExecutionRole` y escritura en las 4 tablas).
 2. Pegar el contenido de `parte_b_streaming/lambda_procesador_ventanas.py` en `lambda_function.py` → **Deploy**.
 3. **Runtime settings → Edit → Handler:** `lambda_function.handler`.
    (El código define la función `handler`, no `lambda_handler`, que es el valor por defecto de la consola.)
@@ -352,10 +328,15 @@ este volumen) u **On-demand**.
 5. (Opcional) **Environment variables:** `KWH_MIN=0`, `KWH_MAX=1500`. Los nombres de tabla tienen valores por defecto.
 6. **Add trigger → Kinesis** → `<STREAM>` → **Batch size:** 100 → **Starting position:** **Trim horizon** → **Add**.
 
+#### 6.3.1 Justificación técnica: ¿Por qué AWS Lambda y no Apache Flink?
 
-¿Por qué AWS Lambda y no Apache Flink?
+Para calcular las ventanas usamos **AWS Lambda** en lugar de Amazon Managed Service for Apache Flink, que el enunciado sugiere pero no exige. 
 
-Para calcular las ventanas usamos AWS Lambda en lugar de Amazon Managed Service for Apache Flink, que el enunciado sugiere pero no exige. El cálculo pedido (conteo y promedio de kWh por bloque en ventanas de un minuto) es una agregación sumable: basta con acumular conteo y suma por ventana con escrituras atómicas (ADD) en DynamoDB, sin guardar estado en la memoria de la función. El volumen de la prueba, un productor de pocos minutos, está muy por debajo de la capacidad de un solo shard de Kinesis (1.000 registros/s de escritura). Además, Lambda se crea completa desde la consola, como exige el curso, y solo cobra cuando procesa, mientras que una aplicación Flink cobra como mínimo 2 KPU (≈0,22 USD/h en us-east-1) desde que se enciende. Conocemos sus límites: Lambda entrega cada evento al menos una vez (at least once), por lo que la deduplicación por event_id y la idempotencia por seq se construyeron a mano; procesa por defecto un lote a la vez por shard (máximo 10 con ParallelizationFactor); sus ventanas nativas son solo fijas, de hasta 15 minutos y con un estado máximo de 1 MB por shard; y no tiene watermarks, así que nuestras ventanas nunca se cierran. Migraríamos a Flink si la métrica IteratorAge de Kinesis creciera de forma sostenida, señal de que la Lambda no alcanza a procesar lo que llega, o si el proyecto necesitara ventanas deslizantes o de sesión, manejo de eventos tardíos, unión de varios streams o garantía exactly once de punta a punta.
+- **Agregación sumable:** El cálculo pedido (conteo y promedio de kWh por bloque en ventanas de un minuto) es una agregación sumable: basta con acumular conteo y suma por ventana con escrituras atómicas (`ADD`) en DynamoDB, sin guardar estado en la memoria de la función.
+- **Escala y Volumen:** El volumen de la prueba (un productor de pocos minutos) está muy por debajo de la capacidad de un solo shard de Kinesis (1.000 registros/s de escritura).
+- **Simplicidad y Costos:** Lambda se crea completa desde la consola (requisito del curso) y solo cobra cuando procesa, mientras que una aplicación Flink cobra como mínimo 2 KPU (≈0,22 USD/h en `us-east-1`) desde que se enciende.
+- **Límites y Mitigación:** Conocemos sus límites: Lambda entrega cada evento al menos una vez (*at least once*), por lo que la deduplicación por `event_id` y la idempotencia por `seq` se construyeron a mano en DynamoDB. Sus ventanas nativas son fijas (máximo 15 minutos) y sin *watermarks*. Migraríamos a Flink si la métrica `IteratorAge` de Kinesis creciera de forma sostenida o si el proyecto necesitara ventanas deslizantes/de sesión o garantía *exactly-once* de punta a punta.
+
 
 ### 6.4 Crear la Lambda `consumidor-crudo` (consumidor 2)
 
@@ -480,21 +461,21 @@ _Completar con la salida de `conteos_y_consultas.py`:_
 
 | Concepto | Cantidad |
 |---|---:|
-| Publicados (productor) | _N_ |
-| Únicos procesados (`eventos_vistos`) | _N_ |
-| Suma de `conteo` en `ventanas_resultados` | _N_ |
-| Repetidos descartados (`eventos_repetidos`) | _N_ |
-| Inválidos descartados (`eventos_invalidos`) | _N_ |
-| Únicos + repetidos + inválidos | _N_ |
-| Eventos crudos en S3 | _N_ |
-| **Resultado** | _CUADRA_ |
+| Publicados (productor) | 2.880 |
+| Únicos procesados (`eventos_vistos`) | 2.481 |
+| Suma de `conteo` en `ventanas_resultados` | 2.481 |
+| Repetidos descartados (`eventos_repetidos`) | 234 |
+| Inválidos descartados (`eventos_invalidos`) | 165 |
+| Únicos + repetidos + inválidos | 2.880 |
+| Eventos crudos en S3 | 2.880 |
+| **Resultado** | **CUADRA** |
 
 **Pregunta B — ¿Qué bloque tuvo el mayor consumo promedio por evento y cuál fue su ventana pico?**
-_Pegar la tabla que imprime el script e interpretarla en una o dos frases._
+El **Bloque 40** tuvo el mayor consumo promedio por evento con **191.97 kWh**, registrando su ventana pico con **224 kWh** al minuto 5 de transmisión.
 
-**Motivos de invalidez observados:** _por ejemplo `campo_faltante:kwh`, `kwh_fuera_de_rango[0,1500]`,
-`kwh_no_numerico`, `ts_invalido`, `json_invalido`, con su cantidad._
-
+**Motivos de invalidez observados:**
+- `campo_faltante:kwh`
+- `kwh_fuera_de_rango[0,1500]`
 ---
 
 ## 8. Problemas comunes y limpieza de recursos
